@@ -4,7 +4,7 @@ docker = laravel + nuxtjs + nginx + php-fpm
 # …or push an existing repository from the command line
 ```shell
 git init
-git remote add origin https://github.com/nOo9ya/laravel8-starter-kit.git
+git remote add origin https://github.com/nOo9ya/docker-laravel-nuxtjs-nginx-php.git
 git branch -M main
 git push -u origin main
 ```
