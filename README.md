@@ -1,6 +1,15 @@
 # docker-laravel-nuxtjs-nginx-php
 docker = laravel + nuxtjs + nginx + php-fpm
 
+# …or push an existing repository from the command line
+```shell
+git init
+git remote add origin https://github.com/nOo9ya/laravel8-starter-kit.git
+git branch -M main
+git push -u origin main
+```
+
+
 ## 디렉토리 구조
 
 docker 파일과 volume으로 연결할 docker, database, logs로 각각 폴더로 구분하여 volume 마운트 시킴
