@@ -1,7 +1,7 @@
 # docker-laravel-nuxtjs-nginx-php
 docker = laravel + nuxtjs + nginx + php-fpm
 
-# …or push an existing repository from the command line
+# …or repository from the command line
 ```shell
 git clone https://github.com/nOo9ya/docker-laravel-nuxtjs-nginx-php.git
 
