@@ -60,7 +60,7 @@ dist
 .dynamodb/
 
 ##### docker volume mout files #####
-/.databases/*
+/.database/*
 /.logs/*
 
 # dotenv environment variables file
