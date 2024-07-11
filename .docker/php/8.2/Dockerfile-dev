@@ -110,6 +110,24 @@ RUN docker-php-ext-enable imagick
 #RUN docker-php-ext-configure pgsql
 #RUN docker-php-ext-install pdo_pgsql pgsql
 
+# Debug install
+# Add sqlite
+RUN apk add --no-cache sqlite-libs
+RUN apk add --no-cache icu sqlite
+RUN apk add --no-cache --virtual .build-deps sqlite-dev curl-dev
+RUN docker-php-ext-install \
+        ctype \
+        pdo_sqlite
+RUN docker-php-ext-enable pdo_sqlite
+
+# Add xdebug
+RUN apk add --no-cache linux-headers \
+	&& apk add --update --no-cache --virtual .build-dependencies $PHPIZE_DEPS\
+	&& pecl install xdebug \
+	&& docker-php-ext-enable xdebug \
+	&& pecl clear-cache \
+	&& apk del .build-dependencies
+
 # App permission check
 RUN mkdir -p ${WORK_DIR}/storage/logs \
     ${WORK_DIR}/storage/framework \
@@ -125,27 +143,16 @@ RUN chmod 755 -R ${WORK_DIR}/bootstrap/cache
 RUN curl -sLS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
 #####################################
-# initailization Start
+# Laravel Schedule Cron Job:
 #####################################
-# Install Cron
-RUN apk add --update --no-cache dcron supervisor logrotate;
-RUN touch /var/log/cron.log &&\
-    mkdir /var/log/supervisor &&\
-    touch /var/log/supervisor/supervisord.log
+RUN echo "* * * * * www-data /usr/local/bin/php ${WORK_DIR}/artisan schedule:run >> /dev/null 2>&1"  >> /var/spool/cron/crontabs/laravel-scheduler
+RUN chmod 0644 /var/spool/cron/crontabs/laravel-scheduler
 
 RUN rm -rf /var/cache/apk/* && rm -rf /tmp/pear
 RUN apk del --purge autoconf g++ make
 
-COPY ./.docker/php/logrotate/supervisor_log.conf /etc/logrotate.d/supervisor
-COPY ./.docker/php/logrotate/laravel-worker_log.conf /etc/logrotate.d/laravel-worker
-COPY ./.docker/php/$PHP_VERSION/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-RUN chmod +x /etc/supervisor/conf.d/supervisord.conf
-
 COPY ./.docker/php/$PHP_VERSION/start-service.sh /usr/local/bin/start-service.sh
 RUN chmod +x /usr/local/bin/start-service.sh
-#CMD ["php-fpm", "-y", "/usr/local/etc/php-fpm.conf", "-R"]
-#ENTRYPOINT ["start-service", "prod"]
-#ENTRYPOINT ["start-service.sh", "${APP_ENV}", "${WORK_DIR}"]
 ENTRYPOINT ["start-service.sh"]
 
 EXPOSE 9000

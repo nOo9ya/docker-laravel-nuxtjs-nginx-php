@@ -1,12 +1,10 @@
 #!/bin/sh
 
-APP=${1}
-WORK_DIR=$(pwd)
+#APP=${1}
+#WORK_DIR=${2}
 set -e
 
 crond
-
-cd ${WORK_DIR}
 
 #user www-data
 #mkdir -p ${WORK_DIR}/storage/framework/cache/data
@@ -19,15 +17,15 @@ cd ${WORK_DIR}
 
 if [ -f "${WORK_DIR}/artisan" ]; then
 
-unlink ${WORK_DIR}/public/storage
-ln -s ${WORK_DIR}/storage/app/public/ ${WORK_DIR}/public/storage
+  unlink ${WORK_DIR}/public/storage
+  ln -s ${WORK_DIR}/storage/app/public/ ${WORK_DIR}/public/storage
 
 #  if [ ! -d "${WORK_DIR}/public/storage" ]; then
 #    php artisan storage:link
 #  fi
 
 
-  if [ "production" = "$APP" ]; then
+  if [ "production" = "$APP_ENV" ]; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> production php service container start"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -70,6 +68,10 @@ ln -s ${WORK_DIR}/storage/app/public/ ${WORK_DIR}/public/storage
   echo "=============================================================================================="
   echo "============================= server php service container start ============================="
   echo "=============================================================================================="
+else
+  echo "not found artisan file!!!!!!!"
+  echo "You must have Laravel installed"
+  tail -f /dev/null
 fi
 
 logrotate /etc/logrotate.d/laravel-worker

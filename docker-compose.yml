@@ -18,6 +18,7 @@ version: '3'
 
 services:
   mariadb:
+    container_name: mariadb
     image: mariadb:11.4
     restart: unless-stopped
     ports:
@@ -41,6 +42,7 @@ services:
       - docker-network
 
   postgresql:
+    container_name: postgresql
     image: postgres:14.4-alpine
     restart: unless-stopped
     ports:
@@ -79,19 +81,26 @@ services:
     container_name: php8.2
     build:
       context: .
-      dockerfile: .docker/php/8.2/Dockerfile
+      dockerfile: .docker/php/8.2/${DOCKER_FILE:-Dockerfile}
       args:
         # - APP_ENV='production'
         - APP_ENV=${APP_ENV:-local}
-        - APP_WORK='/var/www/laravel'
+        - WORK_DIR=${BACKEND_DIR}
         - TZ=${TZ}
     restart: unless-stopped
     expose:
       - '9000'
     volumes:
-      - ./.logs/laravel:/var/log/laravel
+      - ./.logs/${BACKEND}:/var/log/${BACKEND}
       - ./.logs/supervisor:/var/log/supervisor
-      - ./laravel:/var/www/laravel
+      - ./${BACKEND}:/var/www/${BACKEND}
+    environment:
+      PHP_IDE_CONFIG: ${PHP_IDE_CONFIG:-serverName=docker-php}
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+      XDEBUG_CONFIG: "client_host=host.docker.internal"
+      XDEBUG_TRIGGER: 'yes'
+    extra_hosts:
+      - host.docker.internal:${HOST_IP:-172.17.0.1}
     networks:
       - docker-network
     depends_on:
@@ -100,16 +109,18 @@ services:
       - postgresql
 
   nuxt:
+    container_name: nuxt-js
     build:
       context: .
-      dockerfile: .docker/nuxt/Dockerfile
+      dockerfile: .docker/${FRONTEND}/${DOCKER_FILE:-Dockerfile}
+      args:
+        - WORK_DIR=${FRONTEND_DIR}
+        - FRONTEND=${FRONTEND}
 #    command: "npm run build && npm run start"
-    command: "npm init"
     restart: unless-stopped
-    working_dir: /var/www/nuxt
     volumes:
-      - ./nuxt:/var/www/nuxt
-      - ./.logs/nuxt:/var/log/nuxt
+      - ./nuxt:${FRONTEND_DIR}
+      - ./.logs/${FRONTEND}:/var/log/${FRONTEND}
     ports:
       - "${NUXT_FORWARD_PORT}:${NUXT_PORT}"
     networks:
@@ -142,6 +153,7 @@ services:
   #     - docker-network
 
   certbot:
+    container_name: certbot
     image: certbot/certbot
     volumes:
       - ./.certbot/conf:/etc/letsencrypt
@@ -171,8 +183,8 @@ services:
       - ./.logs/nginx:/var/log/nginx
       - ./.certbot/conf:/etc/letsencrypt
       - ./.certbot/www:/var/www/certbot
-      - ./laravel:/var/www/laravel
-      - ./nuxt:/var/www/nuxt
+      - ./${BACKEND}:/var/www/${BACKEND}
+      - ./${FRONTEND}:/var/www/${FRONTEND}
     depends_on:
       - php
       - mariadb
