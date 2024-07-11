@@ -10,6 +10,9 @@
 Desktop.ini
 Thumbs.db
 
+# git
+.git
+
 # Laravel 4 specific
 bootstrap/compiled.php
 app/storage/
