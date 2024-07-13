@@ -84,6 +84,9 @@ services:
         - APP_ENV=${APP_ENV:-local}
         - WORK_DIR=${BACKEND_DIR}
         - TZ=${TZ}
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+        - USER=${USER:-www-data}
     restart: unless-stopped
     expose:
       - '9000'

@@ -2,10 +2,16 @@ FROM php:8.2-fpm-alpine
 
 ARG APP_ENV
 ARG WORK_DIR
+ARG UID
+ARG GID
+ARG USER
 ARG TZ
 
 ENV APP_ENV=${APP_ENV}
 ENV WORK_DIR=${WORK_DIR}
+ENV UID=${UID}
+ENV GID=${GID}
+ENV USER=${USER}
 ENV TZ=${TZ}
 
 ENV PHP_VERSION=8.2
@@ -24,9 +30,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN delgroup dialout
 
 # 환경에 맞춘 그룹과 사용자 생성
-#RUN usermod -u 1000 www-data
-#RUN addgroup -g ${GID} --system ${USER}
-#RUN adduser -G ${USER} --system -D -s /bin/sh -u ${UID} ${USER}
+RUN usermod -u 1000 ${USER}
+RUN addgroup -g ${GID} --system ${USER}
+RUN adduser -G ${USER} --system -D -s /bin/sh -u ${UID} ${USER}
 
 # php-fpm 사용자 변경
 #RUN sed -i "s/user = www-data/user = '${USER}'/g" /usr/local/etc/php-fpm.d/www.conf
@@ -133,8 +139,11 @@ RUN mkdir -p ${WORK_DIR}/storage/logs \
     ${WORK_DIR}/storage/framework \
     ${WORK_DIR}/bootstrap/cache
 
-RUN chmod 755 -R ${WORK_DIR}/storage/logs \
-    ${WORK_DIR}/storage/framework
+RUN chown -R www-data:www-data ${WORK_DIR}/storage/framework/cache/data
+RUN chown -R www-data:www-data ${WORK_DIR}/bootstrap/cache
+RUN chown -R www-data:www-data ${WORK_DIR}/storage
+
+RUN chmod 755 -R ${WORK_DIR}/storage/*
 RUN chmod 755 -R ${WORK_DIR}/bootstrap/cache
 
 #####################################
@@ -145,7 +154,9 @@ RUN curl -sLS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/
 #####################################
 # Laravel Schedule Cron Job:
 #####################################
-RUN echo "* * * * * www-data /usr/local/bin/php ${WORK_DIR}/artisan schedule:run >> /dev/null 2>&1"  >> /var/spool/cron/crontabs/laravel-scheduler
+RUN echo "* * * * * ${USER} /usr/local/bin/php ${WORK_DIR}/artisan schedule:run
+ >>
+/dev/null 2>&1"  >> /var/spool/cron/crontabs/laravel-scheduler
 RUN chmod 0644 /var/spool/cron/crontabs/laravel-scheduler
 
 RUN rm -rf /var/cache/apk/* && rm -rf /tmp/pear
