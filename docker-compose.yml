@@ -119,7 +119,7 @@ services:
 #    command: "npm run build && npm run start"
     restart: unless-stopped
     volumes:
-      - ./nuxt:${FRONTEND_DIR}
+      - ./${FRONTEND}:${FRONTEND_DIR}
       - ./.logs/${FRONTEND}:/var/log/${FRONTEND}
     ports:
       - "${NUXT_FORWARD_PORT}:${NUXT_PORT}"

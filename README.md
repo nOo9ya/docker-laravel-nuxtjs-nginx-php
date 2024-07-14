@@ -33,7 +33,7 @@ docker 파일과 volume으로 연결할 docker, database, logs로 각각 폴더�
     ├── .certbot/
     │   ├── conf/
     │   ├── www/
-    ├── .databases/
+    ├── .database/
     │   ├── mariadb/
     │   └── postgresql/
     │   └── redis/
@@ -58,7 +58,7 @@ docker 파일과 volume으로 연결할 docker, database, logs로 각각 폴더�
     │   │   └── Dockerfile-dev
     │   │   └── start-service.sh
     │   ├── php/
-    │   │   └── web/
+    │   │   └── 8.2/
     │   │   │   └── Dockerfile
     │   │   │   └── Dockerfile-dev
     │   │   │   └── start-service.sh
